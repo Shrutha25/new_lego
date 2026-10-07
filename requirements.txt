@@ -1,0 +1,7 @@
+pyrealsense2
+opencv-python
+numpy
+torch
+torchvision
+pillow
+flask

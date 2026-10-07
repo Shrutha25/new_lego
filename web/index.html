@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assembly Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Home screen -->
+  <section id="screen-home" class="screen home">
+    <h1 class="home-title">Assembly Simulator</h1>
+    <p class="home-subtitle">Master Assembly Skills Through Interactive Training</p>
+    <div class="home-preview">
+      <model-viewer id="home-viewer" src="assets/models/Car.gltf" autoplay alt="Assembly animation preview"></model-viewer>
+    </div>
+    <p class="home-hint">Tap anywhere to begin</p>
+  </section>
+
+  <!-- Trainer screen -->
+  <section id="screen-trainer" class="screen trainer" hidden>
+    <header class="trainer-header">
+      <h1>Assembly Trainer</h1>
+      <button id="restart-btn" class="icon-btn-restart" aria-label="Start again">
+        <svg viewBox="0 0 24 24"><path d="M20 11A8 8 0 1 0 18.6 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 5v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </header>
+
+    <div class="trainer-top">
+      <div class="step-number-tile" id="step-number-tile">1</div>
+      <p class="instruction-text" id="instructions"></p>
+      <div class="trainer-meta">
+        <p class="meta-step" id="step-meta">Step 1 of 5</p>
+        <p class="meta-time" id="time-lapsed">Time Lapsed - 00:00</p>
+      </div>
+    </div>
+
+    <p class="mismatch-alert" id="mismatch-alert"></p>
+
+    <div class="trainer-grid">
+      <div class="feed-panel">
+        <img id="video-feed" src="/video_feed" alt="Live camera feed">
+        <span class="panel-tag">Live Stream</span>
+
+        <div class="step-done-overlay" id="step-done-overlay" hidden>
+          <svg class="check-anim" viewBox="0 0 24 24"><path d="M4 12l6 6L20 6" fill="none" stroke="#6d5bd0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p class="step-done-text" id="step-done-text">Step is done</p>
+          <p class="step-done-sub">Moving forward to next step</p>
+        </div>
+      </div>
+
+      <div class="model-panel">
+        <model-viewer id="viewer" camera-controls auto-rotate auto-rotate-delay="0" rotation-per-second="45deg" autoplay
+                      alt="3D model for the current assembly step"></model-viewer>
+        <p class="viewer-hint" id="viewer-hint" hidden>No 3D model uploaded yet for this step.</p>
+        <span class="panel-tag">3D model Ref</span>
+        <button id="view-reference-btn" class="btn-video-guide">
+          Video Guide
+          <svg viewBox="0 0 20 20"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Completed screen -->
+  <section id="screen-complete" class="screen complete" hidden>
+    <div class="complete-card">
+      <div class="complete-icon">
+        <svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>Steps Completed</h1>
+      <p class="complete-sub">Great job! You have successfully completed the steps</p>
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-icon">P</span>
+          <div><p class="stat-label">Product Name</p><p class="stat-value" id="stat-product">-</p></div>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">
+            <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="#fff" stroke-width="1.4"/><circle cx="10" cy="10" r="1.6" fill="#fff"/></svg>
+          </span>
+          <div><p class="stat-label">Accuracy</p><p class="stat-value" id="stat-accuracy">-</p></div>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">
+            <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10 6v4l3 2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </span>
+          <div><p class="stat-label">Time Taken</p><p class="stat-value" id="stat-time">-</p></div>
+        </div>
+      </div>
+      <button id="restart-from-complete-btn" class="btn btn-dark">Start again</button>
+    </div>
+  </section>
+
+  <!-- Hint modal -->
+  <div id="hint-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <p class="modal-title">Still stuck - watch the step</p>
+      <video id="reference-video" controls></video>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

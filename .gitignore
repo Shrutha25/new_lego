@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/
+models/*.pt
+train_log_*.txt
+.claude/settings.local.json

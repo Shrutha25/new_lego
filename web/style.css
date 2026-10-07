@@ -1,0 +1,391 @@
+:root {
+  --bg: #fafafa;
+  --card: #ffffff;
+  --border: #e7e7e9;
+  --text: #16171a;
+  --text-dim: #7a7c82;
+  --black: #111214;
+  --accent: #6d5bd0;
+  --warn: #b45309;
+  --warn-bg: #fef3e2;
+  --warn-border: #f3d9ad;
+  --ok: #1a7f4e;
+  --ok-bg: #e9f7ef;
+}
+
+* { box-sizing: border-box; }
+
+/* Several elements below (.modal-overlay, .complete, .step-done-overlay,
+   .viewer-hint) set `display` unconditionally for when they're shown - an
+   author rule like that always wins over the browser's built-in
+   `[hidden] { display: none }`, so without this override the `hidden`
+   attribute those elements are toggled with (see app.js) would do nothing
+   and they'd stay visible regardless of its value. */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+}
+
+html {
+  /* Reserves the scrollbar's width whether or not it's currently needed -
+     without this, content height crossing the viewport threshold (e.g. the
+     mismatch alert or chip row changing) makes the scrollbar pop in/out,
+     which shifts the entire page horizontally by its width every time. */
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.screen { max-width: 1600px; margin: 0 auto; padding: 32px 40px; box-sizing: border-box; }
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary { background: var(--black); color: #fff; padding: 12px 28px; font-size: 1rem; }
+.btn-dark { background: var(--black); color: #fff; }
+.btn-dark:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-light { background: #33343a; color: #fff; }
+.btn-small { padding: 6px 14px; font-size: 0.8rem; }
+.icon { width: 16px; height: 16px; }
+.icon.dim { color: var(--text-dim); flex: none; }
+
+/* ---------- Home screen ---------- */
+.home { text-align: center; cursor: pointer; }
+.home-title { font-size: 2.4rem; font-weight: 800; letter-spacing: 0.04em; margin: 20px 0 8px; }
+.home-subtitle { color: var(--text-dim); margin: 0 0 28px; }
+.home-hint { color: var(--text-dim); font-size: 0.9rem; font-weight: 600; margin: 0; }
+.home-preview {
+  border-radius: 20px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(160deg, #3a352f, #8b8478);
+  margin-bottom: 28px;
+}
+.home-preview model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+
+/* ---------- Trainer screen ---------- */
+.trainer {
+  /* Fills the actual browser window instead of sitting at a fixed size near
+     the top with empty space below on most monitors - the panel grid below
+     (flex: 1) absorbs whatever height is left after the header/instructions/
+     alert, so it grows or shrinks with the window instead of being capped
+     by a fixed aspect-ratio. overflow-y is a safety net, not the normal
+     case: on an unusually short viewport the grid can only shrink so far
+     before scrolling is genuinely necessary. */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.trainer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex: none;
+}
+.trainer-header h1 { font-size: 1.9rem; font-weight: 800; margin: 0; }
+
+.icon-btn-restart {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+.icon-btn-restart svg { width: 24px; height: 24px; }
+
+.trainer-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex: none;
+}
+
+.step-number-tile {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background: var(--black);
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.trainer-top .instruction-text {
+  flex: 1;
+  margin: 0;
+  /* Caps the line length so a typical instruction wraps to two lines like
+     the reference design, regardless of how wide the browser window is -
+     font-size alone isn't reliable for this once the page can stretch to
+     1600px, since most instructions would just fit on one long line. */
+  max-width: 640px;
+}
+
+.trainer-meta {
+  flex: none;
+  /* Pins it to the row's right edge regardless of how much space
+     instruction-text actually uses - without this, capping that element's
+     max-width left the leftover flex space unclaimed and this drifted in
+     next to it instead of staying at the edge. */
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+.meta-step, .meta-time { margin: 0; color: var(--text-dim); font-size: 1rem; }
+.meta-step { margin-bottom: 4px; }
+
+.mismatch-alert {
+  /* Always present (not `hidden`) and animated between these two states,
+     so the alert appearing/disappearing doesn't yank everything below it
+     (instructions, the feed/model grid, the hint bar) up and down - it was
+     doing exactly that every time the underlying mismatch flag flickered. */
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--warn);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  max-height: 0;
+  opacity: 0;
+  padding: 0 14px;
+  margin: 0;
+  border-width: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease, margin 0.25s ease, border-width 0.25s ease;
+}
+.mismatch-alert--visible {
+  max-height: 80px;
+  opacity: 1;
+  padding: 10px 14px;
+  margin: 0 0 12px;
+  border-width: 1px;
+}
+
+.instruction-text {
+  font-size: 1.55rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0 0 20px;
+}
+
+.trainer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 16px;
+  flex: 1;
+  /* Without this, a grid item can refuse to shrink below its content's
+     natural size and quietly overflow the flex parent instead of actually
+     filling (or being constrained to) the space flex: 1 gave it. */
+  min-height: 0;
+}
+
+.feed-panel, .model-panel {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--border);
+  /* No fixed aspect-ratio - they stretch to fill whatever height the grid
+     row (== the whole trainer screen's leftover space) actually has. */
+  height: 100%;
+  min-height: 0;
+}
+
+#video-feed, model-viewer {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #f4f4f5;
+}
+
+#video-feed {
+  /* contain, not cover - this is a real camera frame, not decorative
+     imagery. The feed panel rarely matches the camera's native 848:480
+     ratio now that panels stretch to fill the window instead of using a
+     fixed aspect-ratio, and `cover` was cropping (visually "zooming into")
+     the edges to fill the mismatched box - misleading, since the ROI
+     outline drawn on the frame is calibrated against the full, uncropped
+     view the classifier actually sees. `contain` always shows the whole
+     frame, letterboxed if needed, instead of silently cutting off part of
+     what's actually happening.
+  */
+  object-fit: contain;
+}
+
+.panel-tag {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  /* Solid (opaque), not translucent - matches the reference design's
+     lighter gray pill, just with white text instead of gray-on-gray so it
+     stays readable over real video content instead of just a blank mockup. */
+  background: #a8a8ac;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.btn-video-guide {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background: #3a3a3f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.btn-video-guide svg { width: 16px; height: 16px; }
+
+.step-done-overlay {
+  position: absolute;
+  inset: 0;
+  background: #0a0a0c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+}
+.check-anim { width: 48px; height: 48px; }
+.step-done-text { margin: 0; font-size: 1rem; font-weight: 600; }
+.step-done-sub { margin: 0; color: #9a9aa0; font-size: 0.85rem; }
+
+.viewer-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 32px 56px;
+  margin: 0;
+  color: #9a9aa0;
+  font-size: 0.85rem;
+  pointer-events: none;
+  background: rgba(255,255,255,0.85);
+}
+
+/* ---------- Completed screen ---------- */
+.complete { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+.complete-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px;
+  text-align: center;
+  max-width: 640px;
+  width: 100%;
+}
+.complete-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+.complete-icon svg { width: 32px; height: 32px; }
+.complete-card h1 { margin: 0 0 8px; font-size: 1.6rem; }
+.complete-sub { color: var(--text-dim); margin: 0 0 28px; }
+
+.stats-bar {
+  background: var(--black);
+  border-radius: 14px;
+  display: flex;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.stat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  text-align: left;
+}
+.stat:last-child { border-right: none; }
+.stat-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex: none;
+}
+.stat-icon svg { width: 16px; height: 16px; }
+.stat-label { margin: 0; color: #9a9aa0; font-size: 0.72rem; }
+.stat-value { margin: 0; color: #fff; font-weight: 600; font-size: 0.95rem; }
+
+/* ---------- Hint modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(250,250,250,0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+.modal { width: min(760px, 100%); }
+.modal-title { color: var(--text); margin: 0 0 12px; font-size: 1.1rem; font-weight: 600; }
+.modal video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a0a0c;
+  border-radius: 12px;
+  display: block;
+}
+
+@media (max-width: 800px) {
+  .trainer-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .trainer-top { flex-wrap: wrap; }
+  .trainer-meta { text-align: left; }
+}
