@@ -1,7 +1,7 @@
 [
   {"step": 1, "label": "Chassis shown", "instructions": "Place the chassis on the mat so the camera can see it.", "requires": ["chassis"], "model": "assets/models/step_1.gltf"},
   {"step": "2a", "label": "Right side wheels", "instructions": "Attach the front-right and rear-right wheels, then show the right side to the camera.", "requires": ["chassis", "wf_right", "wr_right"], "model": "assets/models/step_2a.gltf"},
-  {"step": "2b", "label": "Left side wheels", "instructions": "Rotate the car and attach the front-left and rear-left wheels. Show the left side of the car to the camera.", "requires": ["chassis", "wf_right", "wr_right", "wf_left", "wr_left"], "model": "assets/models/step_2b.gltf"},
+  {"step": "2b", "label": "Left side wheels", "instructions": "Attach the front-left and rear-left wheels. Show the left side of the car to the camera.", "requires": ["chassis", "wf_right", "wr_right", "wf_left", "wr_left"], "model": "assets/models/step_2b.gltf"},
   {"step": 3, "label": "Windshield", "instructions": "Attach the windshield.", "requires": ["chassis", "wf_right", "wr_right", "wf_left", "wr_left", "windshield"], "model": "assets/models/step_3.gltf"},
   {"step": 4, "label": "Roof", "instructions": "Attach the roof to finish the build.", "requires": ["chassis", "wf_right", "wr_right", "wf_left", "wr_left", "windshield", "roof"], "model": "assets/models/step_4.gltf"}
 ]

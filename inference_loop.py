@@ -6,7 +6,10 @@ Usage:
     python inference_loop.py --checkpoint models/rgbd_classifier.pt
 """
 import argparse
+import socket
+import threading
 import time
+import webbrowser
 from pathlib import Path
 
 import cv2
@@ -95,12 +98,29 @@ def load_model(checkpoint_path, device):
     return model, tags
 
 
+def lan_ip():
+    """Best-effort LAN address of this PC (the one other devices would use)."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("10.255.255.255", 1))  # UDP connect sends nothing; just picks the outbound interface
+        return sock.getsockname()[0]
+    except OSError:
+        return None
+    finally:
+        sock.close()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", default=str(Path(config.MODELS_DIR) / "rgbd_classifier.pt"))
     parser.add_argument("--states", default=config.STATES_PATH)
     parser.add_argument("--no-web", action="store_true", help="Don't start the local web viewer server")
+    parser.add_argument("--window", action="store_true",
+                        help="Also show the debug OpenCV window (off by default - the web UI is the main interface)")
+    parser.add_argument("--no-browser", action="store_true", help="Don't auto-open the web UI in the browser")
     args = parser.parse_args()
+    if args.no_web and not args.window:
+        parser.error("--no-web needs --window, otherwise there is no UI to show")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model, tags = load_model(args.checkpoint, device)
@@ -133,14 +153,21 @@ def main():
     if not args.no_web:
         live_state = web_server.LiveState()
         web_server.start_server_thread(live_state)
-        print(f"Web viewer: http://localhost:{config.WEB_PORT}")
+        url = f"http://localhost:{config.WEB_PORT}"
+        print(f"Web UI: {url}  (Ctrl+C to quit)")
+        ip = lan_ip()
+        if ip:
+            print(f"Share on your network: http://{ip}:{config.WEB_PORT}")
+        if not args.no_browser:
+            threading.Timer(2.0, webbrowser.open, args=(url,)).start()
 
     pipeline, align, depth_scale = build_pipeline()
     window = "LEGO assembly guidance (q: quit, r or RESTART button: reset session)"
     button_rect = restart_button_rect(config.COLOR_WIDTH)
     reset_flag = {"requested": False}
-    cv2.namedWindow(window)
-    cv2.setMouseCallback(window, make_restart_click_handler(button_rect, reset_flag))
+    if args.window:
+        cv2.namedWindow(window)
+        cv2.setMouseCallback(window, make_restart_click_handler(button_rect, reset_flag))
     try:
         # RealSense auto-exposure/white-balance (and sometimes early depth
         # frames) need a moment to settle after pipeline.start(). Without
@@ -250,8 +277,11 @@ def main():
             draw_restart_button(display, button_rect)
             if live_state is not None:
                 live_state.set_frame(web_frame)
-            cv2.imshow(window, display)
-            key = cv2.waitKey(1) & 0xFF
+            if args.window:
+                cv2.imshow(window, display)
+                key = cv2.waitKey(1) & 0xFF
+            else:
+                key = -1
             web_reset_requested = live_state is not None and live_state.consume_reset_request()
             if key == ord("q"):
                 break
@@ -262,9 +292,12 @@ def main():
                 total_frames = 0
                 mismatch_frames = 0
                 print("session state reset")
+    except KeyboardInterrupt:
+        print("Stopping...")
     finally:
         pipeline.stop()
-        cv2.destroyAllWindows()
+        if args.window:
+            cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

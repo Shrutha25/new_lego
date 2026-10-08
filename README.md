@@ -122,16 +122,16 @@ GPU is used automatically if available.
 ## 8. Run live guidance
 
 ```
-python inference_loop.py --checkpoint models/rgbd_classifier.pt
+python inference_loop.py
 ```
 
-Opens a window showing the camera feed with the current guidance message, per-tag confidence, and which tags are confirmed for the session. Controls:
-- `q` — quit
-- `r` — reset session state (start the tracked assembly over)
+Starts the web UI and opens it in your browser automatically (`http://localhost:5000`). There is no OpenCV window by default - the browser page is the interface, and its RESTART button resets the tracked assembly. Press `Ctrl+C` in the terminal to quit. `--checkpoint <path>` overrides the default `models/rgbd_classifier.pt`.
 
-Pass `--roi X0 Y0 X1 Y1` if you want the occlusion check restricted to a sub-region of the frame instead of the whole image.
-
-This also starts a local web viewer (`http://localhost:5000`) in the background - see Section 9 below. Pass `--no-web` to skip it and only show the OpenCV window.
+Flags:
+- `--window` - also show the debug OpenCV window (`q` quit, `r` reset).
+- `--no-browser` - don't auto-open the browser.
+- `--roi X0 Y0 X1 Y1` - restrict the occlusion check to a sub-region of the frame.
+- `--no-web` - skip the web server (requires `--window`).
 
 ## 9. Web viewer
 
